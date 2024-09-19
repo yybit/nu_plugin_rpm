@@ -1,0 +1,22 @@
+[package]
+name = "nu_plugin_rpm"
+version = "0.1.0"
+edition = "2021"
+authors = ["yybit <yybit2@gmail.com>"]
+license = "Apache-2.0"
+homepage = "https://github.com/yybit/nu_plugin_rpm"
+repository = "https://github.com/yybit/nu_plugin_rpm"
+description = "A nushell plugin for reading rpm package."
+readme = "README.md"
+include = ["**/*.rs", "Cargo.toml"]
+keywords = ["nu", "plugin", "rpm"]
+
+
+[dependencies]
+nu-plugin = "0.98.0"
+nu-protocol = "0.98.0"
+rpm = "0.15.1"
+unix_mode = "0.1.4"
+
+[dev-dependencies]
+nu-plugin-test-support = "0.98.0"
