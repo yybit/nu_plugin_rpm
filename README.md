@@ -2,7 +2,7 @@
 [![docs.rs](https://docs.rs/nu_plugin_rpm/badge.svg)](https://docs.rs/nu_plugin_rpm)
 
 ## nu_plugin_rpm
-A nushell plugin for reading rpm package.
+A nushell plugin for reading rpm package. Require nushell >= `0.98.0`.
 
 ### Installation
 ```shell
