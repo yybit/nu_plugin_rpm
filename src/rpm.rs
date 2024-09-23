@@ -1,8 +1,8 @@
-use std::io::{BufReader, Cursor};
+use std::io::{BufReader, Read};
 
 use crate::RpmPlugin;
-use nu_plugin::{PluginCommand, SimplePluginCommand};
-use nu_protocol::{record, Category, LabeledError, Signature, Type, Value};
+use nu_plugin::PluginCommand;
+use nu_protocol::{record, Category, LabeledError, PipelineData, Signature, Type, Value};
 use rpm::{chrono, FileEntry, Scriptlet};
 
 fn dep_to_record(dep: &rpm::Dependency, span: nu_protocol::Span) -> nu_protocol::Value {
@@ -56,12 +56,11 @@ pub struct FromRpm;
 impl FromRpm {
     fn convert_metadata_to_record(
         &self,
-        data: &Vec<u8>,
+        r: impl Read + Send + 'static,
         span: nu_protocol::Span,
         show_files: bool,
     ) -> Result<nu_protocol::Value, rpm::Error> {
-        let cursor = Cursor::new(data);
-        let mut buf_reader = BufReader::new(cursor);
+        let mut buf_reader = BufReader::new(r);
         let pkg = rpm::Package::parse(&mut buf_reader)?;
         let md = pkg.metadata;
 
@@ -97,7 +96,6 @@ impl FromRpm {
             "obsoletes" => Value::list(md.get_obsoletes().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "recommends" => Value::list(md.get_recommends().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "suggests" => Value::list(md.get_suggests().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
-            // "files" => Value::list(md.get_file_entries().unwrap_or_default().iter().map(|e| file_entry_to_record(e, span)).collect(), span),
         );
         if show_files {
             rec.insert(
@@ -116,14 +114,14 @@ impl FromRpm {
     }
 }
 
-impl SimplePluginCommand for FromRpm {
+impl PluginCommand for FromRpm {
     type Plugin = RpmPlugin;
 
     fn name(&self) -> &str {
         "from rpm"
     }
 
-    fn signature(&self) -> nu_protocol::Signature {
+    fn signature(&self) -> Signature {
         Signature::build(PluginCommand::name(self))
             .switch(
                 "files",
@@ -145,16 +143,21 @@ impl SimplePluginCommand for FromRpm {
         _plugin: &Self::Plugin,
         _engine: &nu_plugin::EngineInterface,
         call: &nu_plugin::EvaluatedCall,
-        input: &nu_protocol::Value,
-    ) -> Result<nu_protocol::Value, nu_protocol::LabeledError> {
-        let span = input.span();
-
+        input: nu_protocol::PipelineData,
+    ) -> Result<nu_protocol::PipelineData, LabeledError> {
         match input {
-            Value::Binary { val, .. } => {
+            PipelineData::ByteStream(byte_stream, pipeline_metadata) => {
+                let span = byte_stream.span();
                 let rec = self
-                    .convert_metadata_to_record(val, span, call.has_flag("files")?)
+                    .convert_metadata_to_record(
+                        byte_stream
+                            .reader()
+                            .ok_or(LabeledError::new("empty input"))?,
+                        span,
+                        call.has_flag("files")?,
+                    )
                     .map_err(|e| LabeledError::new(e.to_string()))?;
-                Ok(rec)
+                Ok(PipelineData::Value(rec, pipeline_metadata))
             }
             v => {
                 return Err(LabeledError::new(format!(
