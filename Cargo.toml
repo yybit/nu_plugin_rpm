@@ -1,6 +1,6 @@
 [package]
 name = "nu_plugin_rpm"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 authors = ["yybit <yybit2@gmail.com>"]
 license = "Apache-2.0"
@@ -13,8 +13,8 @@ keywords = ["nu", "plugin", "rpm"]
 
 
 [dependencies]
-nu-plugin = "0.102.0"
-nu-protocol = { version = "0.102.0", features = ["plugin"] }
+nu-plugin = "0.103.0"
+nu-protocol = { version = "0.103.0", features = ["plugin"] }
 rpm = "0.16.0"
 unix_mode = "0.1.4"
 
