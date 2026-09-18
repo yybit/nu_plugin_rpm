@@ -88,7 +88,7 @@ open -r xxx.rpm | from rpm -f
 │                       │ │ 17 │ rpmlib(PayloadIsZstd)               │ LESS | EQUAL | RPMLIB │ 5.4.18-1      │ │
 │                       │ │ 18 │ rtld(GNU_HASH)                      │ FIND_REQUIRES         │               │ │
 │                       │ ╰────┴─────────────────────────────────────┴───────────────────────┴───────────────╯ │
-│ conficts              │ [list 0 items]                                                                       │
+│ conflicts             │ [list 0 items]                                                                       │
 │                       │ ╭───┬──────────────┬───────┬─────────╮                                               │
 │ obsoletes             │ │ # │     name     │ flags │ version │                                               │
 │                       │ ├───┼──────────────┼───────┼─────────┤                                               │

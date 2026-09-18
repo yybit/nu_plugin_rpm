@@ -43,7 +43,7 @@ fn file_entry_to_record(e: &FileEntry, span: nu_protocol::Span) -> nu_protocol::
             "mode" => Value::string(mode, span),
             "user" => Value::string(e.ownership.user.clone(), span),
             "group" => Value::string(e.ownership.group.clone(), span),
-            "motified_at" => Value::date(chrono::DateTime::from_timestamp(u32::from(e.modified_at) as i64, 0).unwrap_or_default().into(), span),
+            "modified_at" => Value::date(chrono::DateTime::from_timestamp(u32::from(e.modified_at) as i64, 0).unwrap_or_default().into(), span),
             "size" => Value::filesize(e.size as i64, span),
             "linkto" => Value::string(e.linkto.clone(), span),
         ),
@@ -61,8 +61,7 @@ impl FromRpm {
         show_files: bool,
     ) -> Result<nu_protocol::Value, rpm::Error> {
         let mut buf_reader = BufReader::new(r);
-        let pkg = rpm::Package::parse(&mut buf_reader)?;
-        let md = pkg.metadata;
+        let md = rpm::PackageMetadata::parse(&mut buf_reader)?;
 
         let mut rec = record!(
             "name" => Value::string(md.get_name().unwrap_or_default(), span),
@@ -92,7 +91,7 @@ impl FromRpm {
             "post_untrans_script" => Value::string(md.get_post_untrans_script().unwrap_or(Scriptlet::new("")).script, span),
             "provides" => Value::list(md.get_provides().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "requires" => Value::list(md.get_requires().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
-            "conficts" => Value::list(md.get_conflicts().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
+            "conflicts" => Value::list(md.get_conflicts().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "obsoletes" => Value::list(md.get_obsoletes().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "recommends" => Value::list(md.get_recommends().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
             "suggests" => Value::list(md.get_suggests().unwrap_or_default().iter().map(|x| dep_to_record(x, span)).collect::<Vec<_>>(), span),
